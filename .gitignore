@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+build/
+dist/
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Secrets: only .env.example is committed
+.env
+.env.*
+!.env.example
+
+# Import reports written locally
+reports/
+
+# Editors
+.idea/
+.vscode/
+
+# Built documentation site (mkdocs build)
+site/
