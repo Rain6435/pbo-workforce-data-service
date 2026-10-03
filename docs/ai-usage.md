@@ -1,6 +1,6 @@
 # Use of AI Tools
 
-The use of AI tools in this project falls into two main categories:
+The use of AI tools in this project falls into three main categories:
 
 1. **Best Practices and Code Readability**
    Once the core requirements were met, AI was consulted to refine the project's architecture and modularization. AI helped design an intuitive, easy-to-navigate layout tailored for reviewers examining the solution for the first time. It was also used to draft inline code documentation, making unfamiliar functions immediately clear to reviewers and developers working inside an IDE. Overall, this was intended to improve code maintainability and accelerate comprehension.
