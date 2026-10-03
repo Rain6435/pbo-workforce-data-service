@@ -1,0 +1,19 @@
+# Only pyproject.toml, uv.lock, README.md, src/, alembic.ini and migrations/
+# are needed to build the image. Secrets and data never enter it: the
+# workbook is mounted read-only into the import container at run time.
+.env
+.env.*
+.git
+.github
+.venv
+.claude
+data
+docs
+tests
+reports
+**/__pycache__
+.pytest_cache
+.ruff_cache
+.coverage
+coverage.xml
+htmlcov

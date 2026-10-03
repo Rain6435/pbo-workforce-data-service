@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - run: uv run ruff check
+      - run: uv run ruff format --check
+      - run: uv run pyright
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: pbo_admin
+          POSTGRES_PASSWORD: pbo_admin
+          POSTGRES_DB: pbo_workforce_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pbo_admin -d pbo_workforce_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # Throwaway credentials for the CI service container only.
+      TEST_DATABASE_URL: postgresql+psycopg://pbo_admin:pbo_admin@localhost:5432/pbo_workforce_test
+      # Migration 0002 creates the pbo_api / pbo_import roles with these
+      # passwords; tests/integration/test_db_roles.py connects as them.
+      MIGRATIONS_DATABASE_URL: postgresql+psycopg://pbo_admin:pbo_admin@localhost:5432/pbo_workforce_test
+      DATABASE_URL: postgresql+psycopg://pbo_api:pbo_api@localhost:5432/pbo_workforce_test
+      IMPORT_DATABASE_URL: postgresql+psycopg://pbo_import:pbo_import@localhost:5432/pbo_workforce_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - run: uv run pytest --cov=pbo_workforce --cov-report=term-missing
+
+  audit:
+    # Known vulnerabilities in the locked runtime dependencies.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv export --locked --no-dev --no-emit-project --format requirements-txt > requirements.txt
+      - run: uvx pip-audit --strict -r requirements.txt
+
+  compose:
+    # `docker compose up` from a clean checkout, then exercise the running API.
+    runs-on: ubuntu-latest
+    env:
+      # The key whose digest is in .env.example (local/CI only).
+      API_KEY: local-dev-key-change-me
+    steps:
+      - uses: actions/checkout@v4
+      - run: cp .env.example .env
+      - run: docker compose up --build --detach
+      - name: Wait for the API
+        run: |
+          for _ in $(seq 1 60); do
+            curl --silent --fail http://127.0.0.1:8000/health && exit 0
+            sleep 3
+          done
+          exit 1
+      - name: Import finished successfully
+        run: |
+          test "$(docker inspect --format '{{.State.ExitCode}}' "$(docker compose ps --all --quiet import)")" = 0
+          docker compose logs import | grep "Reconciliation (read = accepted + rejected + collapsed): OK"
+      - name: API behaves
+        run: |
+          set -o pipefail
+          test "$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:8000/api/departments)" = 401
+          curl --silent --fail -H "X-API-Key: $API_KEY" http://127.0.0.1:8000/api/departments \
+            | python3 -c "import json, sys; d = json.load(sys.stdin)['departments']; assert len(d) == 101 and d[0]['dept_short']['en'] == 'ASC', d[0]"
+          curl --silent --fail -H "X-API-Key: $API_KEY" "http://127.0.0.1:8000/api/departments/1/fte?year=2022" \
+            | python3 -c "import json, sys; q = json.load(sys.stdin)['fte_per_quarter']; assert [x['quarter'] for x in q] == [1, 2, 3, 4], q"
+      - name: Re-running the import is a no-op
+        run: docker compose run --rm import | grep "already imported"
+      - name: Containers run as non-root
+        run: test "$(docker compose exec api id -u)" = 10001
+      - if: failure()
+        run: docker compose logs

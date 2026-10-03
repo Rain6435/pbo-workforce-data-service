@@ -1,0 +1,88 @@
+# Local stack: `cp .env.example .env && docker compose up`.
+#
+#   db       PostgreSQL 16
+#   migrate  one-shot: alembic upgrade head (schema + least-privilege roles)
+#   import   one-shot: pbo-import data/data.xlsx (a no-op if already imported)
+#   api      FastAPI on http://127.0.0.1:8000, as the read-only pbo_api role
+#
+# Each container receives only the credentials its job needs; .env is used
+# for variable substitution below and is never passed in wholesale.
+
+x-app: &app
+  build: .
+  image: pbo-workforce-data-service:local
+  read_only: true
+  tmpfs: [/tmp]
+  security_opt: ["no-new-privileges:true"]
+  cap_drop: [ALL]
+
+services:
+  db:
+    image: postgres:16.15-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
+    environment:
+      POSTGRES_USER: pbo_admin
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: pbo_workforce
+    # Localhost only, on 5433 so it does not clash with a local Postgres.
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Creates pbo_workforce_test on first start, for running the tests.
+      - ./docker/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pbo_admin -d pbo_workforce"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    <<: *app
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      MIGRATIONS_DATABASE_URL: postgresql+psycopg://pbo_admin:${POSTGRES_PASSWORD}@db:5432/pbo_workforce
+      DATABASE_URL: postgresql+psycopg://pbo_api:${PBO_API_DB_PASSWORD:?set PBO_API_DB_PASSWORD in .env}@db:5432/pbo_workforce
+      IMPORT_DATABASE_URL: postgresql+psycopg://pbo_import:${PBO_IMPORT_DB_PASSWORD:?set PBO_IMPORT_DB_PASSWORD in .env}@db:5432/pbo_workforce
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  import:
+    <<: *app
+    command: ["pbo-import", "/data/data.xlsx"]
+    environment:
+      IMPORT_DATABASE_URL: postgresql+psycopg://pbo_import:${PBO_IMPORT_DB_PASSWORD}@db:5432/pbo_workforce
+    volumes:
+      - ./data:/data:ro
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: "no"
+
+  api:
+    <<: *app
+    environment:
+      DATABASE_URL: postgresql+psycopg://pbo_api:${PBO_API_DB_PASSWORD}@db:5432/pbo_workforce
+      API_KEY_HASHES: ${API_KEY_HASHES:?set API_KEY_HASHES in .env}
+      QUARTER_BASIS: ${QUARTER_BASIS:-calendar}
+      ENVIRONMENT: ${ENVIRONMENT:-prod}
+      DOCS_ENABLED: ${DOCS_ENABLED:-false}
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      import:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  pgdata:
