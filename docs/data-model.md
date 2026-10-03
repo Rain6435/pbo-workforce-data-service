@@ -4,8 +4,8 @@ Defined in [`migrations/versions/0001_schema.py`](https://github.com/Rain6435/pb
 extended by [`0003_row_versions.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0003_row_versions.py), and mirrored by typed models in
 [`src/pbo_workforce/db/tables.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/db/tables.py).
 [`tests/integration/test_migrations.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_migrations.py) checks that the two agree
-([`test_models_match_migrations`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_migrations.py), [`test_check_constraint_names_match_models`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_migrations.py)) and
-that the migrations can be reversed ([`test_downgrade_to_base_and_upgrade_again`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_migrations.py)).
+([`test_models_match_migrations`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_migrations.py#L21-L23), [`test_check_constraint_names_match_models`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_migrations.py#L26-L36)) and
+that the migrations can be reversed ([`test_downgrade_to_base_and_upgrade_again`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_migrations.py#L39-L46)).
 
 ```mermaid
 erDiagram
@@ -80,14 +80,14 @@ erDiagram
 
 One row per department, kept even if a later sheet no longer lists it
 ([D20](assumptions.md#d20)). `id` is not a sequence: the importer assigns it
-([`_upsert_departments`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/load.py), [D5](assumptions.md#d5)). `long_name_en` is unique. Names are stored as in the
+([`_upsert_departments`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/load.py#L202-L237), [D5](assumptions.md#d5)). `long_name_en` is unique. Names are stored as in the
 source with outer whitespace removed (`’` preserved, [D6](assumptions.md#d6)). Short names are NULL
 when the source has none ([D21](assumptions.md#d21)).
 
 ### `department_alias`
 
 Reviewed misspellings from [`src/pbo_workforce/ingest/aliases.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/aliases.py), replaced on
-every import ([`_replace_aliases`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/load.py)) so the table always matches the code that was
+every import ([`_replace_aliases`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/load.py#L249-L262)) so the table always matches the code that was
 used. The primary key is the normalized alias.
 
 ### `workforce_monthly`
@@ -97,20 +97,20 @@ One version of an accepted source row ([D1](assumptions.md#d1), [D16](assumption
 values: they close a version (set `valid_to_batch_id` and `closed_reason`) and
 insert a new one, so the table also holds the history of every revision.
 
-- Partial unique index [`uq_workforce_monthly_current_key`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0003_row_versions.py) on
+- Partial unique index [`uq_workforce_monthly_current_key`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0003_row_versions.py#L69) on
   `(department_id, period, tenure, source)` `WHERE valid_to_batch_id IS NULL`:
   at most one current version per natural key, while history may hold several.
   Duplicates are quarantined before insert ([D10](assumptions.md#d10)), so this index is a safety net.
-- Partial index [`ix_workforce_monthly_current_department_id_source_period`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0003_row_versions.py)
-  `WHERE valid_to_batch_id IS NULL`: serves [`fte_per_quarter`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py), which reads
-  one department and source over a period range ([D12](assumptions.md#d12) [`year_bounds`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/domain/period.py)), and
+- Partial index [`ix_workforce_monthly_current_department_id_source_period`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0003_row_versions.py#L79)
+  `WHERE valid_to_batch_id IS NULL`: serves [`fte_per_quarter`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py#L35-L105), which reads
+  one department and source over a period range ([D12](assumptions.md#d12) [`year_bounds`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/domain/period.py#L132-L137)), and
   stays the size of the current data as history grows.
 - CHECK constraints:
-  - [`headcount_non_negative`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0001_schema.py), [`fte_non_negative`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0001_schema.py): repeat [D8](assumptions.md#d8) in the database.
-  - [`period_first_of_month`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0001_schema.py): one representation per month.
-  - [`source_shape`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0001_schema.py): FPS rows have FTE and a real tenure; RCMP/CAF rows have no
+  - [`headcount_non_negative`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0001_schema.py#L131), [`fte_non_negative`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0001_schema.py#L134): repeat [D8](assumptions.md#d8) in the database.
+  - [`period_first_of_month`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0001_schema.py#L138): one representation per month.
+  - [`source_shape`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0001_schema.py#L143): FPS rows have FTE and a real tenure; RCMP/CAF rows have no
     FTE and tenure `combined` ([D11](assumptions.md#d11)).
-  - [`closed_consistent`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0003_row_versions.py): `valid_to_batch_id` and `closed_reason` are both set
+  - [`closed_consistent`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0003_row_versions.py#L58): `valid_to_batch_id` and `closed_reason` are both set
     or both NULL.
 - **Provenance:** `import_batch_id`, `source_sheet`, and `source_row` identify the
   file and Excel row every figure came from.
@@ -131,9 +131,9 @@ How it is defined in the code:
   runs `CREATE VIEW` and moves the API role's `SELECT` grant from the table to
   the view; its `downgrade()` reverses both. The view's definition lives with
   the rest of the schema history.
-- **Described, not created, in Python.** [`workforce_current`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/db/tables.py)
+- **Described, not created, in Python.** [`workforce_current`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/db/tables.py#L227-L237)
   in `src/pbo_workforce/db/tables.py` is a SQLAlchemy `Table` listing the
-  columns the queries need, so [`fte_per_quarter`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py)
+  columns the queries need, so [`fte_per_quarter`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py#L35-L105)
   can query it with typed expressions. It has its own `MetaData()`, separate
   from the models, so Alembic's model-to-database comparison and `create_all()`
   never treat it as a table to manage or create.
@@ -145,7 +145,7 @@ How it is defined in the code:
 ### `import_batch`
 
 One row per import attempt ([D14](assumptions.md#d14), [D19](assumptions.md#d19)). `file_sha256` drives idempotency: a
-file is skipped only if it matches the latest successful batch. [`counts`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/report.py) holds
+file is skipped only if it matches the latest successful batch. [`counts`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/report.py#L120-L129) holds
 per-sheet read/accepted/collapsed counts, rejections and warnings by code, and
 version counts (unchanged, added, revised, closed), as in the report. `error` is
 set only for failed batches. Workforce rows reference a batch twice: the batch
@@ -172,8 +172,8 @@ are indexed on `batch_id`. These tables are not readable by the API role.
 ## Roles
 
 [`migrations/versions/0002_roles.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0002_roles.py)
-creates [`pbo_api`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0002_roles.py) (read-only sessions, 5 s statement timeout) and [`pbo_import`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0002_roles.py)
+creates [`pbo_api`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0002_roles.py#L33) (read-only sessions, 5 s statement timeout) and [`pbo_import`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0002_roles.py#L34)
 (SELECT/INSERT/UPDATE/DELETE on the six application tables, no DDL).
 [`0003_row_versions.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0003_row_versions.py) limits
-[`pbo_api`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0002_roles.py) to SELECT on `department` and the [`workforce_current`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0003_row_versions.py) view; it cannot
+[`pbo_api`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0002_roles.py#L33) to SELECT on `department` and the [`workforce_current`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0003_row_versions.py#L86) view; it cannot
 read `workforce_monthly` itself or any import table. See [security.md](security.md).

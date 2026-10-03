@@ -57,7 +57,7 @@ averaging rule ([D3](#d3)), only the query changes; nothing is re-imported.
 - **Alternative:** store quarterly aggregates. Rejected: it fixes the definition
   in the data and loses detail.
 - **Where:** [`workforce_monthly`](data-model.md#workforce_monthly) ([`migrations/versions/0001_schema.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0001_schema.py));
-  [`src/pbo_workforce/repositories/workforce.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py) → [`fte_per_quarter`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py).
+  [`src/pbo_workforce/repositories/workforce.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py) → [`fte_per_quarter`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py#L35-L105).
 
 <a id="d2"></a>
 
@@ -75,23 +75,23 @@ the server is configured for the federal fiscal year (April to March).
 | April 2026 | 2026 Q2 | 2026 Q1 (fiscal 2026-27) |
 
 A fiscal year is labelled by the year it starts in, so fiscal 2025-26 is
-`"year": 2025`. Switching is one setting, [`QUARTER_BASIS=fiscal`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/config.py).
+`"year": 2025`. Switching is one setting, [`QUARTER_BASIS=fiscal`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/config.py#L44).
 
-- **Decision:** [`QuarterBasis.CALENDAR`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/domain/period.py) (Q1 = Jan to Mar) by default, set by
-  [`QUARTER_BASIS`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/config.py). [`QuarterBasis.FISCAL`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/domain/period.py) (Q1 = Apr to Jun) is implemented. A
+- **Decision:** [`QuarterBasis.CALENDAR`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/domain/period.py#L16) (Q1 = Jan to Mar) by default, set by
+  [`QUARTER_BASIS`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/config.py#L44). [`QuarterBasis.FISCAL`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/domain/period.py#L20) (Q1 = Apr to Jun) is implemented. A
   fiscal year is labelled by the calendar year it starts in, so fiscal 2025-26 is
   `year: 2025` and March 2026 is 2025 Q4.
 - **Rationale:** calendar quarters need no convention for labelling fiscal
   years, so they are the least surprising default. Both bases are one
-  offset ([`quarter_offset_months`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/domain/period.py): 0 or 3) used by [`to_quarter`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/domain/period.py) in Python and by
-  the SQL in [`fte_per_quarter`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py).
+  offset ([`quarter_offset_months`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/domain/period.py#L81-L92): 0 or 3) used by [`to_quarter`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/domain/period.py#L95-L129) in Python and by
+  the SQL in [`fte_per_quarter`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py#L35-L105).
 - **Alternative:** hard-code calendar quarters. Rejected: government reporting
   commonly uses the fiscal year.
-- **Where:** [`src/pbo_workforce/domain/period.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/domain/period.py); [`Settings.quarter_basis`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/config.py)
+- **Where:** [`src/pbo_workforce/domain/period.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/domain/period.py); [`Settings.quarter_basis`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/config.py#L44)
   ([`src/pbo_workforce/config.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/config.py)). Tests: [`tests/unit/test_period.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/unit/test_period.py) →
-  [`test_fiscal_quarter`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/unit/test_period.py); [`tests/integration/test_workforce_repo.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_workforce_repo.py) →
-  [`test_fiscal_quarters`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_workforce_repo.py); [`tests/api/test_fte.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/api/test_fte.py) →
-  [`test_quarter_basis_setting_switches_to_fiscal`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/api/test_fte.py).
+  [`test_fiscal_quarter`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/unit/test_period.py#L72-L86); [`tests/integration/test_workforce_repo.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_workforce_repo.py) →
+  [`test_fiscal_quarters`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_workforce_repo.py#L130-L135); [`tests/api/test_fte.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/api/test_fte.py) →
+  [`test_quarter_basis_setting_switches_to_fiscal`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/api/test_fte.py#L164-L176).
 - **Question for analysts (first to confirm):** calendar or fiscal quarters? If
   fiscal, label by starting year (2025 for 2025-26) or ending year?
 
@@ -153,12 +153,12 @@ usable. This is why [Finding 2](#finding-2) below is a question for analysts.
   so that tenure counts as 0 for that month and lowers the mean. Every such row
   is listed in the import report and in [`import_rejection`](data-model.md#import_rejection-import_warning). The tenure filter
   never changes which months count.
-- **Where:** [`src/pbo_workforce/repositories/workforce.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py) → [`fte_per_quarter`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py)
-  (CTE [`monthly`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py), then `avg` per quarter). Tests:
+- **Where:** [`src/pbo_workforce/repositories/workforce.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py) → [`fte_per_quarter`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py#L35-L105)
+  (CTE [`monthly`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py#L70-L80), then `avg` per quarter). Tests:
   [`tests/integration/test_workforce_repo.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_workforce_repo.py) →
-  [`test_calendar_quarters_hand_computed`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_workforce_repo.py),
-  [`test_tenure_filter_selects_columns_without_changing_reporting_months`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_workforce_repo.py);
-  [`tests/api/test_fte.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/api/test_fte.py) → [`test_fte_exact_shape`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/api/test_fte.py).
+  [`test_calendar_quarters_hand_computed`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_workforce_repo.py#L117-L127),
+  [`test_tenure_filter_selects_columns_without_changing_reporting_months`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_workforce_repo.py#L154-L163);
+  [`tests/api/test_fte.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/api/test_fte.py) → [`test_fte_exact_shape`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/api/test_fte.py#L55-L80).
 - **Questions for analysts:** does a month with no rows mean "no data" or "no
   employees" (Example 2)? Is this averaging rule the one used in PBO
   publications, and should quarantined rows lower the mean (see Findings [2](#finding-2) and [3](#finding-3))?
@@ -185,8 +185,18 @@ averages are not computed from already-rounded numbers.
   throughout; there is no `Decimal`.
 - **Alternative:** `NUMERIC(12,4)`, which is exact decimal but rounds the source
   value at import.
-- **Where:** [`WorkforceMonthly.fte`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/db/tables.py) ([`src/pbo_workforce/db/tables.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/db/tables.py));
-  [`FteQuarter.from_quarter`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py) ([`src/pbo_workforce/api/schemas.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py)).
+- **Why not whole numbers:** the example response in the exercise shows whole
+  numbers, but FTE is fractional by nature (a half-time position is 0.5), and
+  quarterly means rarely land on whole numbers. In `data.xlsx`, rounding to whole
+  numbers would show 304 non-zero values as `0`. For example,
+  `GET /api/departments/26/fte?year=2025&tenure=student` (Copyright Board
+  Canada) returns `0.49`, `0.0`, `0.33`, `0.67` for the four quarters; as whole
+  numbers this becomes `0`, `0`, `0`, `1`, as if students only appeared in Q4.
+  In 1,447 of 4,150 department-quarters, the rounded tenures would also no longer
+  add up to the rounded total. Two decimals keep small departments visible, and
+  clients that need whole numbers can still round.
+- **Where:** [`WorkforceMonthly.fte`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/db/tables.py#L181) ([`src/pbo_workforce/db/tables.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/db/tables.py));
+  [`FteQuarter.from_quarter`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py#L86-L90) ([`src/pbo_workforce/api/schemas.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py)).
 
 <a id="d5"></a>
 
@@ -196,7 +206,7 @@ averages are not computed from already-rounded numbers.
 and a department keeps its number forever, even when the sheet changes.
 
 **Example:** on the first import, Accessibility Standards Canada (first row of
-the sheet) becomes [`dept_id`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py) 1 and Administrative Tribunals Support Service of
+the sheet) becomes [`dept_id`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py#L30) 1 and Administrative Tribunals Support Service of
 Canada becomes 2. If a later file inserts a new department at the top of the
 sheet, ASC is still 1 and the new department gets the next free number (102 in
 the current data). A script that calls `/api/departments/1/fte` keeps getting
@@ -206,13 +216,13 @@ ASC.
   de-duplication, so ASC = 1. Later imports match existing departments by
   normalized English name, keep their ID, update changed names, and give new
   departments the next IDs.
-- **Rationale:** analysts and published work may refer to [`dept_id`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py).
+- **Rationale:** analysts and published work may refer to [`dept_id`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py#L30).
 - **Alternative:** database sequence IDs, which depend on insert order and history.
-- **Where:** [`_upsert_departments`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/load.py) ([`src/pbo_workforce/ingest/load.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/load.py)). Tests:
+- **Where:** [`_upsert_departments`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/load.py#L202-L237) ([`src/pbo_workforce/ingest/load.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/load.py)). Tests:
   [`tests/integration/test_import.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py) →
-  [`test_departments_stored_canonical_with_ids_in_sheet_order`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py),
-  [`test_department_ids_are_stable_across_imports`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py);
-  [`tests/integration/test_import_real_file.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import_real_file.py) → [`test_asc_is_department_1`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import_real_file.py).
+  [`test_departments_stored_canonical_with_ids_in_sheet_order`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py#L175-L191),
+  [`test_department_ids_are_stable_across_imports`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py#L348-L369);
+  [`tests/integration/test_import_real_file.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import_real_file.py) → [`test_asc_is_department_1`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import_real_file.py#L107-L108).
 
 <a id="d6"></a>
 
@@ -229,24 +239,24 @@ misspellings are matched only if listed in a reviewed list. Nothing is guessed.
 | 2362 | `Public Service␣␣Commission of Canada` (two spaces) | Public Service Commission of Canada | spaces collapsed |
 | 3045 | `Innovation, Science and Economic Development Canada␣` | Innovation, Science and Economic Development Canada | outer space removed |
 | 3293 | `␣Office of the Commissioner for Federal Judicial Affairs Canada` | Office of the Commissioner for Federal Judicial Affairs Canada | outer space removed |
-| 2672 | `Privy Council Officee` | Privy Council Office | listed in [`KNOWN_ALIASES`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/aliases.py) |
+| 2672 | `Privy Council Officee` | Privy Council Office | listed in [`KNOWN_ALIASES`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/aliases.py#L13-L17) |
 
 A name such as `Privy Council Offic` would **not** be matched: it is not a
-listed alias, so the row would be quarantined as [`UNKNOWN_DEPARTMENT`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py) for a
+listed alias, so the row would be quarantined as [`UNKNOWN_DEPARTMENT`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py#L29) for a
 person to review. Names are stored as the Departments sheet spells them, keeping
 the typographic apostrophe in, for example, `Normes d’accessibilité Canada`.
 
-- **Decision:** names are matched on [`normalize_name_key`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/normalize.py): Unicode NFC, collapsed
+- **Decision:** names are matched on [`normalize_name_key`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/normalize.py#L27-L37): Unicode NFC, collapsed
   internal whitespace, stripped, and `’`/`‘` compared as `'`. Names are stored
   as in the Departments sheet with only outer whitespace removed (`’`
-  preserved). Known misspellings resolve only through [`KNOWN_ALIASES`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/aliases.py), persisted
+  preserved). Known misspellings resolve only through [`KNOWN_ALIASES`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/aliases.py#L13-L17), persisted
   to [`department_alias`](data-model.md#department_alias). There is no fuzzy matching, and matching is
-  case-sensitive (no case variants occur). Anything else is [`UNKNOWN_DEPARTMENT`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py).
+  case-sensitive (no case variants occur). Anything else is [`UNKNOWN_DEPARTMENT`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py#L29).
 - **Rationale:** fuzzy matching can silently merge distinct departments. Every
   relaxation is visible and tested.
 - **Where:** [`src/pbo_workforce/ingest/normalize.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/normalize.py),
   [`src/pbo_workforce/ingest/aliases.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/aliases.py). Tests: [`tests/unit/test_normalize.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/unit/test_normalize.py);
-  [`tests/integration/test_import_real_file.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import_real_file.py) → [`test_problem_1_*`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import_real_file.py).
+  [`tests/integration/test_import_real_file.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import_real_file.py) → [`test_problem_1_*`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import_real_file.py#L111-L126).
 
 <a id="d7"></a>
 
@@ -259,17 +269,17 @@ empty tenure cell is treated as an error, not as the "Missing" category.
 4115 (`Indeterminate␣`, Communications Security Establishment) have a trailing
 space; both are accepted as *term* and *indeterminate*. Row 3845 (Public
 Prosecution Service of Canada, March 2016, 899 employees) has an empty tenure
-cell and is quarantined as [`BLANK_TENURE`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py). It is **not** counted as *missing*:
+cell and is quarantined as [`BLANK_TENURE`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py#L30). It is **not** counted as *missing*:
 "Missing" is a real category the source uses on 741 rows, meaning the employer
 did not record a tenure. Putting 899 employees into it would invent data.
 
-- **Decision:** strip and match case-insensitively to [`Tenure`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/domain/tenure.py). A blank tenure is
-  quarantined as [`BLANK_TENURE`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py).
+- **Decision:** strip and match case-insensitively to [`Tenure`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/domain/tenure.py#L6-L18). A blank tenure is
+  quarantined as [`BLANK_TENURE`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py#L30).
 - **Rationale:** `Missing` is a category the source reports; a blank is a data
   error. Mapping one to the other would invent data.
-- **Where:** [`parse_tenure`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/domain/tenure.py) ([`src/pbo_workforce/domain/tenure.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/domain/tenure.py)); [`_tenure`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py)
+- **Where:** [`parse_tenure`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/domain/tenure.py#L43-L56) ([`src/pbo_workforce/domain/tenure.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/domain/tenure.py)); [`_tenure`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py#L191-L199)
   ([`src/pbo_workforce/ingest/validate.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py)). Tests: [`tests/unit/test_tenure.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/unit/test_tenure.py) →
-  [`test_blank_is_not_mapped_to_missing`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/unit/test_tenure.py).
+  [`test_blank_is_not_mapped_to_missing`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/unit/test_tenure.py#L32-L34).
 
 <a id="d8"></a>
 
@@ -279,9 +289,9 @@ did not record a tenure. Putting 899 employees into it would invent data.
 importer never keeps the good half of a bad row.
 
 **Example:** row 639 (Canadian Heritage, Indeterminate, May 2015) has an FTE of
-1518.66 but no headcount. The whole row is quarantined as [`NULL_MEASURE`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py),
+1518.66 but no headcount. The whole row is quarantined as [`NULL_MEASURE`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py#L32),
 including its FTE. Row 502 (Canadian Transportation Agency, Casual, April 2015)
-has a headcount of **−20** and is quarantined as [`NEGATIVE_MEASURE`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py). Both rows
+has a headcount of **−20** and is quarantined as [`NEGATIVE_MEASURE`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py#L35). Both rows
 stay visible in [`import_rejection`](data-model.md#import_rejection-import_warning) with their original cell values.
 
 The cost of this rule is real: without row 639, Canadian Heritage's 2015 Q2
@@ -294,7 +304,7 @@ Indeterminate FTE is **1008.77** instead of **1514.99** ([D3](#d3), [Finding 3](
   Checks run in that order and the first failure is recorded ([D18](#d18)).
 - **Rationale:** partially trusting a row would mix known-bad and assumed-good
   values in one record.
-- **Where:** [`validate_row`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py) ([`src/pbo_workforce/ingest/validate.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py)). Tests: one
+- **Where:** [`validate_row`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py#L106-L168) ([`src/pbo_workforce/ingest/validate.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py)). Tests: one
   per code in [`tests/unit/test_validate.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/unit/test_validate.py).
 - **Question for analysts:** see [Finding 3](#finding-3) (rows with a valid FTE but no
   headcount) and [Finding 2](#finding-2) (a large row lost to a blank tenure).
@@ -309,21 +319,21 @@ flagged, rather than thrown away.
 **Example 1:** row 9238 (Parks Canada, Student, July 2017) has FTE 2365.07 for a
 headcount of 2321. More FTE than people is unusual but can happen (for example
 overtime or staff changing mid-month), so the row is accepted and flagged
-[`FTE_EXCEEDS_HEADCOUNT`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py). 33 rows are flagged this way.
+[`FTE_EXCEEDS_HEADCOUNT`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py#L43). 33 rows are flagged this way.
 
 **Example 2:** the RCMP and CAF sheets list one figure per year, each March,
 until 2025. Both sheets start with an April 2015 row whose value is identical to
 March 2016 (RCMP: 21,017 both times). The row is accepted and flagged
-[`SUSPECT_DATE`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py), because it may be a mislabelled March 2015.
+[`SUSPECT_DATE`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py#L44), because it may be a mislabelled March 2015.
 
-- **Decision:** FTE > headcount ([`FTE_EXCEEDS_HEADCOUNT`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py)) and RCMP/CAF rows off
-  their annual March cadence before March 2025 ([`SUSPECT_DATE`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py)) are accepted
+- **Decision:** FTE > headcount ([`FTE_EXCEEDS_HEADCOUNT`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py#L43)) and RCMP/CAF rows off
+  their annual March cadence before March 2025 ([`SUSPECT_DATE`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py#L44)) are accepted
   unchanged and recorded in [`import_warning`](data-model.md#import_rejection-import_warning) and the report.
 - **Rationale:** both are plausible but unusual. Neither justifies discarding
   data.
-- **Where:** [`validate_row`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py); [`AnnualCadence`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/sources.py) ([`src/pbo_workforce/ingest/sources.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/sources.py)).
-  Tests: [`test_fte_exceeds_headcount_is_accepted_with_warning`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/unit/test_validate.py),
-  [`test_off_cadence_date_is_suspect`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/unit/test_validate.py).
+- **Where:** [`validate_row`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py#L106-L168); [`AnnualCadence`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/sources.py#L24-L34) ([`src/pbo_workforce/ingest/sources.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/sources.py)).
+  Tests: [`test_fte_exceeds_headcount_is_accepted_with_warning`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/unit/test_validate.py#L155-L158),
+  [`test_off_cadence_date_is_suspect`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/unit/test_validate.py#L165-L179).
 - **Question for analysts:** should the 201504 RCMP/CAF rows be treated as
   March 2015?
 
@@ -337,7 +347,7 @@ are all set aside.
 
 **Example 1:** Canadian Food Inspection Agency appears on rows 13 and 14 of the
 Departments sheet with identical names in both languages. It is stored once, and
-row 14 is reported as [`DUPLICATE_DEPARTMENT_ROW`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py).
+row 14 is reported as [`DUPLICATE_DEPARTMENT_ROW`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py#L45).
 
 **Example 2 (hypothetical):** if row 14 had a different French name, the
 importer could not know which one is right, so the whole import stops and
@@ -345,21 +355,21 @@ nothing changes in the database until the file is fixed.
 
 **Example 3 (hypothetical):** if the FPS sheet had two rows for ASC, Term,
 December 2021 (say FTE 7.33 and 8.00), both would be quarantined as
-[`DUPLICATE_KEY`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py), rather than silently keeping one of them. The current file has
+[`DUPLICATE_KEY`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py#L37), rather than silently keeping one of them. The current file has
 no such rows.
 
 - **Decision:** identical duplicate Departments rows are collapsed with
-  [`DUPLICATE_DEPARTMENT_ROW`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py). Conflicting ones (same normalized English name,
+  [`DUPLICATE_DEPARTMENT_ROW`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py#L45). Conflicting ones (same normalized English name,
   other fields differ) fail the import. Workforce rows sharing
-  `(department, month, tenure, source)` are *all* quarantined as [`DUPLICATE_KEY`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py).
+  `(department, month, tenure, source)` are *all* quarantined as [`DUPLICATE_KEY`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py#L37).
 - **Rationale:** reference data must be consistent. With conflicting workforce
   duplicates there is no basis for choosing one.
-- **Where:** [`validate_departments`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py), [`reject_duplicate_keys`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py)
+- **Where:** [`validate_departments`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py#L260-L293), [`reject_duplicate_keys`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py#L218-L247)
   ([`src/pbo_workforce/ingest/validate.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py)). Tests:
-  [`test_identical_duplicate_department_is_collapsed_with_warning`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/unit/test_validate.py),
-  [`test_conflicting_duplicate_department_fails`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/unit/test_validate.py),
-  [`test_duplicate_keys_reject_every_copy`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/unit/test_validate.py),
-  [`test_conflicting_department_duplicate_rolls_back`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py).
+  [`test_identical_duplicate_department_is_collapsed_with_warning`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/unit/test_validate.py#L248-L254),
+  [`test_conflicting_duplicate_department_fails`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/unit/test_validate.py#L257-L264),
+  [`test_duplicate_keys_reject_every_copy`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/unit/test_validate.py#L191-L202),
+  [`test_conflicting_department_duplicate_rolls_back`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py#L415-L432).
 
 <a id="d11"></a>
 
@@ -372,18 +382,18 @@ returns an empty list rather than invented numbers.
 Members) and `GET /api/departments/10/fte` (Canadian Armed Forces) both return
 `{"fte_per_quarter": []}` with status 200. Their headcounts (for example
 20,130 RCMP members in March 2025) are stored, ready for a headcount endpoint if
-analysts want one. Note that [`dept_id`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py) 86, "Royal Canadian Mounted Police"
+analysts want one. Note that [`dept_id`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py#L30) 86, "Royal Canadian Mounted Police"
 without "- Members", is the RCMP's civilian staff from the FPS sheet and does
 have FTE.
 
 - **Decision:** imported into [`workforce_monthly`](data-model.md#workforce_monthly) with source `rcmp`/`caf`, tenure
-  `combined`, `fte` NULL (enforced by [`ck_workforce_monthly_source_shape`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0001_schema.py)). The
+  `combined`, `fte` NULL (enforced by [`ck_workforce_monthly_source_shape`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0001_schema.py#L143)). The
   FTE endpoint returns `200 {"fte_per_quarter": []}` for them.
 - **Rationale:** inventing FTE (for example FTE = headcount) would publish
   unsupported figures.
-- **Where:** [`RCMP`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/sources.py), [`CAF`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/sources.py) in [`src/pbo_workforce/ingest/sources.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/sources.py);
-  [`fte_per_quarter`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py) reads only [`source = 'fps'`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py). Test:
-  [`tests/api/test_fte.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/api/test_fte.py) → [`test_rcmp_and_caf_have_no_fte`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/api/test_fte.py).
+- **Where:** [`RCMP`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/sources.py#L59-L66), [`CAF`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/sources.py#L68-L75) in [`src/pbo_workforce/ingest/sources.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/sources.py);
+  [`fte_per_quarter`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py#L35-L105) reads only [`source = 'fps'`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py#L64). Test:
+  [`tests/api/test_fte.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/api/test_fte.py) → [`test_rcmp_and_caf_have_no_fte`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/api/test_fte.py#L112-L116).
 - **Question for analysts:** would a headcount series help (for example a future
   `measure=headcount` option)?
 
@@ -410,8 +420,8 @@ bad parameter (`query.year: Input should be greater than or equal to 2000`).
   the five FPS categories, and limits which tenure keys appear. Repeated values
   are de-duplicated, and keys follow the fixed order
   indeterminate, term, casual, student, missing. Invalid values return 422.
-- **Where:** [`get_fte_per_quarter`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/routes/departments.py) ([`src/pbo_workforce/api/routes/departments.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/routes/departments.py));
-  [`year_bounds`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/domain/period.py) turns `year` into a month range so the index is used. Tests:
+- **Where:** [`get_fte_per_quarter`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/routes/departments.py#L45-L82) ([`src/pbo_workforce/api/routes/departments.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/routes/departments.py));
+  [`year_bounds`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/domain/period.py#L132-L137) turns `year` into a month range so the index is used. Tests:
   [`tests/api/test_fte.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/api/test_fte.py).
 
 <a id="d13"></a>
@@ -434,10 +444,10 @@ server log under the same reference, so support can find it without exposing
 SQL or data to the caller.
 
 - **Decision:** every error is `{"error": {"code", "message"}}`. Unknown
-  department → 404 [`department_not_found`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/routes/departments.py). Unexpected errors → 500 with a
+  department → 404 [`department_not_found`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/routes/departments.py#L75). Unexpected errors → 500 with a
   reference ID that is also logged with the traceback.
-- **Where:** [`_handle`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/errors.py) ([`src/pbo_workforce/api/errors.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/errors.py)). Tests:
-  [`test_unexpected_error_hides_details`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/api/test_departments.py), [`test_unknown_department_is_404`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/api/test_fte.py).
+- **Where:** [`_handle`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/errors.py#L47-L76) ([`src/pbo_workforce/api/errors.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/errors.py)). Tests:
+  [`test_unexpected_error_hides_details`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/api/test_departments.py#L80-L98), [`test_unknown_department_is_404`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/api/test_fte.py#L119-L128).
 
 <a id="d14"></a>
 
@@ -458,17 +468,17 @@ older file again after a newer one is applied, because it changes the data back
 
 - **Decision:** [`import_batch`](data-model.md#import_batch) records the file's SHA-256, times, status, and
   per-sheet counts. Importing the same file as the latest successful import is a
-  no-op unless [`--force`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/cli.py); with [`--force`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/cli.py) it adds a batch but no row versions.
+  no-op unless [`--force`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/cli.py#L26); with [`--force`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/cli.py#L26) it adds a batch but no row versions.
   The whole import is one transaction.
 - **Revised during implementation:** at first, a file was skipped if *any*
   earlier import had the same hash. Once imports kept history ([D16](#d16)),
   importing an older file again became a real change, so only the latest
   successful import counts as "already imported".
-- **Where:** [`run_import`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/load.py), [`_import`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/load.py) ([`src/pbo_workforce/ingest/load.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/load.py)). Tests:
-  [`test_second_import_of_same_file_is_a_noop`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py),
-  [`test_forced_reimport_of_same_file_changes_nothing`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py),
-  [`test_older_file_imported_again_is_applied_not_skipped`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py),
-  [`test_failure_after_rows_were_written_rolls_back_everything`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py).
+- **Where:** [`run_import`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/load.py#L97-L122), [`_import`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/load.py#L136-L182) ([`src/pbo_workforce/ingest/load.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/load.py)). Tests:
+  [`test_second_import_of_same_file_is_a_noop`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py#L194-L201),
+  [`test_forced_reimport_of_same_file_changes_nothing`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py#L204-L225),
+  [`test_older_file_imported_again_is_applied_not_skipped`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py#L326-L345),
+  [`test_failure_after_rows_were_written_rolls_back_everything`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py#L435-L448).
 
 <a id="d15"></a>
 
@@ -476,16 +486,16 @@ older file again after a newer one is applied, because it changes the data back
 
 **In short:** results always come back in the same order.
 
-**Example:** `/api/departments` lists [`dept_id`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py) 1, 2, 3, …; an FTE response
+**Example:** `/api/departments` lists [`dept_id`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py#L30) 1, 2, 3, …; an FTE response
 lists 2021 Q4, then 2022 Q1, 2022 Q2, and so on. A script comparing two calls
 never sees differences caused by ordering alone.
 
-- **Decision:** departments by [`dept_id`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py); quarters by year, then quarter.
-- **Where:** departments are sorted by [`order_by(Department.id)`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/departments.py) in
-  [`list_departments`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/departments.py)
+- **Decision:** departments by [`dept_id`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py#L30); quarters by year, then quarter.
+- **Where:** departments are sorted by [`order_by(Department.id)`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/departments.py#L13) in
+  [`list_departments`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/departments.py#L11-L13)
   ([`src/pbo_workforce/repositories/departments.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/departments.py)); quarters are sorted by
-  [`order_by(quarter_year, quarter)`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py) in
-  [`fte_per_quarter`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py)
+  [`order_by(quarter_year, quarter)`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py#L95) in
+  [`fte_per_quarter`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py#L35-L105)
   ([`src/pbo_workforce/repositories/workforce.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py)).
 
 <a id="d16"></a>
@@ -506,7 +516,7 @@ current version for the same department, month, tenure, and source:
 | Added | A month that was not in the previous file | New current version. |
 | Revised | ASC, Dec 2021, Term: FTE 7.33 becomes 7.50 | Old version closed as `revised`; new version is current. |
 | Absent | Passport Canada's July 2016 row is no longer in the file | Version closed as `absent`; nothing is deleted. |
-| Now quarantined | A row that was valid now has no headcount | Version closed as [`rejected`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/report.py); the rejection is also in [`import_rejection`](data-model.md#import_rejection-import_warning). |
+| Now quarantined | A row that was valid now has no headcount | Version closed as [`rejected`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/report.py#L96-L99); the rejection is also in [`import_rejection`](data-model.md#import_rejection-import_warning). |
 | Reappears | An absent row comes back in a later file | New current version; the closed one stays as history. |
 
 So an analyst who published 7.33 last month can still see that value, which
@@ -518,7 +528,7 @@ closed 0` for the Federal Public Service sheet.
 
 - **Decision:** a row in [`workforce_monthly`](data-model.md#workforce_monthly) is current while
   [`valid_to_batch_id`](data-model.md#workforce_monthly) is NULL. An import closes a current version (sets
-  [`valid_to_batch_id`](data-model.md#workforce_monthly) and [`closed_reason`](data-model.md#workforce_monthly): `revised`, `absent`, or [`rejected`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/report.py))
+  [`valid_to_batch_id`](data-model.md#workforce_monthly) and [`closed_reason`](data-model.md#workforce_monthly): `revised`, `absent`, or [`rejected`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/report.py#L96-L99))
   instead of deleting or updating it, and inserts new versions for added and
   revised rows. A partial unique index allows one current version per key. The
   API reads the [`workforce_current`](data-model.md#workforce_current-view) view, which holds current versions only;
@@ -535,17 +545,17 @@ closed 0` for the Federal Public Service sheet.
   (simple, but loses history); mark only missing rows (keeps
   disappearances, but a revised value still overwrites the old one); upsert row
   by row (keeps rows that vanished from the source as if still current).
-- **Where:** [`diff_snapshot`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/versioning.py) ([`src/pbo_workforce/ingest/versioning.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/versioning.py)) decides
-  what changed; [`_load_sheet`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/load.py) ([`src/pbo_workforce/ingest/load.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/load.py)) applies it;
+- **Where:** [`diff_snapshot`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/versioning.py#L41-L67) ([`src/pbo_workforce/ingest/versioning.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/versioning.py)) decides
+  what changed; [`_load_sheet`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/load.py#L265-L333) ([`src/pbo_workforce/ingest/load.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/load.py)) applies it;
   [`migrations/versions/0003_row_versions.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0003_row_versions.py) adds the columns, partial indexes,
-  and view; [`fte_per_quarter`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py) ([`src/pbo_workforce/repositories/workforce.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py))
+  and view; [`fte_per_quarter`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py#L35-L105) ([`src/pbo_workforce/repositories/workforce.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py))
   reads [`workforce_current`](data-model.md#workforce_current-view). Tests: [`tests/unit/test_versioning.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/unit/test_versioning.py);
-  [`test_row_absent_from_new_file_is_closed_not_deleted`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py),
-  [`test_revised_value_closes_old_version_and_adds_new_one`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py),
-  [`test_row_quarantined_in_new_file_is_closed_as_rejected`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py),
-  [`test_row_that_reappears_gets_a_new_version`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py),
-  [`test_closed_versions_are_ignored`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_workforce_repo.py),
-  [`test_reimporting_the_same_file_changes_nothing`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import_real_file.py).
+  [`test_row_absent_from_new_file_is_closed_not_deleted`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py#L253-L280),
+  [`test_revised_value_closes_old_version_and_adds_new_one`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py#L283-L297),
+  [`test_row_quarantined_in_new_file_is_closed_as_rejected`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py#L300-L311),
+  [`test_row_that_reappears_gets_a_new_version`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py#L314-L323),
+  [`test_closed_versions_are_ignored`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_workforce_repo.py#L181-L204),
+  [`test_reimporting_the_same_file_changes_nothing`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import_real_file.py#L249-L263).
 - **Question for analysts:** should the API also expose history, for example
   figures "as of" an earlier import, so published analyses can be reproduced
   through the API rather than the database?
@@ -559,14 +569,14 @@ its own reason code.
 
 **Example (hypothetical):** a headcount typed as text (`"12"`), a headcount of
 `20.5` (people are counted in whole numbers), or an FTE of `#N/A` would each be
-quarantined as [`INVALID_MEASURE`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py). No row in the current file triggers it; the
+quarantined as [`INVALID_MEASURE`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py#L34). No row in the current file triggers it; the
 code exists so a future file with such values fails loudly instead of being
 misread.
 
 - **Decision:** a measure that is text, NaN, infinite, or a fractional headcount
-  is rejected as [`INVALID_MEASURE`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py).
-- **Where:** [`_measure`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py) ([`src/pbo_workforce/ingest/validate.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py)). Test:
-  [`test_invalid_measure`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/unit/test_validate.py).
+  is rejected as [`INVALID_MEASURE`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py#L34).
+- **Where:** [`_measure`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py#L202-L215) ([`src/pbo_workforce/ingest/validate.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py)). Test:
+  [`test_invalid_measure`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/unit/test_validate.py#L121-L132).
 
 <a id="d18"></a>
 
@@ -578,11 +588,11 @@ one found, in a fixed order: date, department, tenure, measures.
 **Example:** row 2672 has a misspelled department (`Privy Council Officee`) and
 no headcount. The misspelling is resolved through the alias list ([D6](#d6)), so the
 first real problem is the missing headcount: the row is reported as
-[`NULL_MEASURE`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py), not [`UNKNOWN_DEPARTMENT`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py).
+[`NULL_MEASURE`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py#L32), not [`UNKNOWN_DEPARTMENT`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py#L29).
 
-- **Decision:** one reason code per rejected row, in the order of [`RejectReason`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py).
-- **Test:** [`test_first_failing_check_wins`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/unit/test_validate.py),
-  [`test_alias_resolved_row_with_null_measure_is_null_measure`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/unit/test_validate.py).
+- **Decision:** one reason code per rejected row, in the order of [`RejectReason`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py#L25-L37).
+- **Test:** [`test_first_failing_check_wins`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/unit/test_validate.py#L144-L146),
+  [`test_alias_resolved_row_with_null_measure_is_null_measure`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/unit/test_validate.py#L149-L152).
 
 <a id="d19"></a>
 
@@ -591,7 +601,7 @@ first real problem is the missing headcount: the row is reported as
 **In short:** a failed import changes no data, but the attempt itself is
 recorded so it can be investigated.
 
-**Example:** importing a file without a [`CAF`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/sources.py) sheet stops with
+**Example:** importing a file without a [`CAF`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/sources.py#L68-L75) sheet stops with
 `Import failed, nothing was changed: sheet 'CAF' not found`. The database is
 exactly as before, and [`import_batch`](data-model.md#import_batch) gains one row with status `failed`, the
 file's hash, and that message. Fixing the file and importing again works
@@ -601,9 +611,9 @@ normally.
   separate transaction. For known failures the message is stored; for unexpected
   errors only the exception type is stored, so no SQL or data is kept. A failed
   batch never blocks a retry.
-- **Where:** [`_record_failure`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/load.py) ([`src/pbo_workforce/ingest/load.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/load.py)). Tests:
-  [`test_conflicting_department_duplicate_rolls_back`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py),
-  [`test_failed_import_does_not_block_retry`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py).
+- **Where:** [`_record_failure`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/load.py#L477-L504) ([`src/pbo_workforce/ingest/load.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/load.py)). Tests:
+  [`test_conflicting_department_duplicate_rolls_back`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py#L415-L432),
+  [`test_failed_import_does_not_block_retry`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py#L451-L457).
 
 <a id="d20"></a>
 
@@ -612,12 +622,12 @@ normally.
 **In short:** if a department disappears from a later Departments sheet, it
 stays in the database with its ID, and anything that names it still finds it.
 
-**Example 1 (hypothetical):** Passport Canada ([`dept_id`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py) 75) only has data for
+**Example 1 (hypothetical):** Passport Canada ([`dept_id`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py#L30) 75) only has data for
 two months in 2016. If a future Departments sheet dropped it, it would remain at
 ID 75, so any script or published table that refers to 75 still resolves.
 Removing a department is left as a deliberate, manual decision.
 
-**Example 2 (hypothetical):** Privy Council Office ([`dept_id`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py) 78) is the target
+**Example 2 (hypothetical):** Privy Council Office ([`dept_id`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py#L30) 78) is the target
 of the reviewed alias `Privy Council Officee` ([D6](#d6)). If a future sheet dropped
 it, the alias would still point to department 78, and workforce rows naming
 Privy Council Office, or its misspelling, would still be accepted under ID 78.
@@ -633,11 +643,11 @@ in [`aliases.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/ma
   that dropping a department that is the target of a reviewed alias made the
   next import fail. Names and aliases now resolve against kept departments as
   well as the current sheet.
-- **Where:** [`src/pbo_workforce/ingest/load.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/load.py) → [`_upsert_departments`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/load.py), which
+- **Where:** [`src/pbo_workforce/ingest/load.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/load.py) → [`_upsert_departments`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/load.py#L202-L237), which
   returns the IDs of all departments, kept ones included. Tests:
   [`tests/integration/test_import.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py) →
-  [`test_department_missing_from_later_sheet_is_kept`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py),
-  [`test_rows_and_aliases_still_resolve_to_a_kept_department`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py).
+  [`test_department_missing_from_later_sheet_is_kept`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py#L372-L384),
+  [`test_rows_and_aliases_still_resolve_to_a_kept_department`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import.py#L387-L412).
 
 <a id="d21"></a>
 
@@ -658,8 +668,8 @@ to 10 departments.
 
 - **Decision:** the 10 departments without short names return `"dept_short": null`
   rather than empty strings.
-- **Where:** [`Department.from_row`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py) ([`src/pbo_workforce/api/schemas.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py)). Test:
-  [`test_departments_exact_shape_and_order`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/api/test_departments.py).
+- **Where:** [`Department.from_row`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py#L36-L46) ([`src/pbo_workforce/api/schemas.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py)). Test:
+  [`test_departments_exact_shape_and_order`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/api/test_departments.py#L33-L59).
 
 <a id="d22"></a>
 
@@ -668,12 +678,12 @@ to 10 departments.
 **In short:** each part of the system receives only the database password it
 needs.
 
-**Example:** in [`docker-compose.yml`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/docker-compose.yml), the [`import`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/docker-compose.yml) container receives only
-[`IMPORT_DATABASE_URL`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/config.py) (role [`pbo_import`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0002_roles.py)) and the [`api`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/docker-compose.yml) container only
-[`DATABASE_URL`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/config.py) (role [`pbo_api`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0002_roles.py), read-only). If the API were compromised, the
+**Example:** in [`docker-compose.yml`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/docker-compose.yml), the [`import`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/docker-compose.yml#L51) container receives only
+[`IMPORT_DATABASE_URL`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/config.py#L77) (role [`pbo_import`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0002_roles.py#L34)) and the [`api`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/docker-compose.yml#L63) container only
+[`DATABASE_URL`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/config.py#L39) (role [`pbo_api`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0002_roles.py#L33), read-only). If the API were compromised, the
 attacker would hold a password that can read the department list and the
 current figures (the [`workforce_current`](data-model.md#workforce_current-view) view) and nothing else; apart
-from the database itself, only the one-off [`migrate`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/docker-compose.yml) container receives the
+from the database itself, only the one-off [`migrate`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/docker-compose.yml#L39) container receives the
 owner's password.
 
 - **Decision:** the API, the importer, and migrations each load their own settings
@@ -691,7 +701,7 @@ negative measures, FTE above headcount, a duplicated department, departments
 without short names, suspicious RCMP/CAF dates, and absent tenure rows. Each is
 handled by a decision above and covered by a test in
 [`tests/integration/test_import_real_file.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import_real_file.py)
-([`test_problem_1_*`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import_real_file.py) to [`test_problem_10_*`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import_real_file.py)).
+([`test_problem_1_*`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import_real_file.py#L111-L126) to [`test_problem_10_*`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import_real_file.py#L236-L246)).
 
 The findings below go further: they describe what the data shows and how the
 rules affect specific figures. They are numbered so the decisions above can
@@ -703,7 +713,7 @@ refer to them.
   International Joint Commission, Office of the Prime Minister, Registrar of the
   Supreme Court of Canada, Royal Canadian Mounted Police - Members, Security
   Intelligence Review Committee, and Statistical Survey Operations
-  ([`test_problem_8_missing_short_names_are_null`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import_real_file.py)).
+  ([`test_problem_8_missing_short_names_are_null`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import_real_file.py#L213-L221)).
 - <a id="finding-2"></a>**Finding 2: The blank-tenure row is very likely PPSC's Indeterminate row** (201603, 899 of
   about 970 staff). Quarantining it makes PPSC's 2016 Q1 Indeterminate FTE
   590.96 instead of about 890 ([D3](#d3), Example 3).
@@ -742,7 +752,7 @@ refer to them.
    source, or accept documented corrections in the importer (like the alias map)?
 6. **RCMP/CAF ([D11](#d11)):** is a headcount endpoint wanted, and should the 201504 rows
    be treated as March 2015 ([D9](#d9))?
-7. **Department IDs ([D5](#d5)):** is [`dept_id`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py) already used in analysts' scripts, and
+7. **Department IDs ([D5](#d5)):** is [`dept_id`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py#L30) already used in analysts' scripts, and
    should IDs match any existing PBO reference list?
 8. **History ([D16](#d16)):** should the API expose earlier versions of the data (an "as
    of" option), so published figures can be reproduced through the API?

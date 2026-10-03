@@ -1,7 +1,7 @@
 [project]
 name = "pbo-workforce-data-service"
 version = "0.1.0"
-description = "Parliamentary Budget Officer (PBO) Workforce Data Service"
+description = "Parliamentary Budget Office (PBO) Workforce Data Service"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

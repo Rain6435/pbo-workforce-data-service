@@ -3,14 +3,14 @@
 Base URL in the compose setup: `http://127.0.0.1:8000`. Routes:
 [`src/pbo_workforce/api/routes/`](https://github.com/Rain6435/pbo-workforce-data-service/tree/main/src/pbo_workforce/api/routes); response
 models: [`src/pbo_workforce/api/schemas.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py).
-When [`DOCS_ENABLED=true`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/config.py) (never in prod), the OpenAPI schema is at
+When [`DOCS_ENABLED=true`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/config.py#L46) (never in prod), the OpenAPI schema is at
 `/openapi.json` and Swagger UI at `/docs`.
 
 ## Authentication
 
 Every `/api/...` route requires the header `X-API-Key`. The server stores only
-SHA-256 digests of accepted keys ([`API_KEY_HASHES`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/config.py), comma-separated) and compares
-in constant time ([`require_api_key`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/security.py) in [`src/pbo_workforce/api/security.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/security.py)).
+SHA-256 digests of accepted keys ([`API_KEY_HASHES`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/config.py#L42), comma-separated) and compares
+in constant time ([`require_api_key`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/security.py#L37-L53) in [`src/pbo_workforce/api/security.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/security.py)).
 Authentication runs before parameter validation, so an unauthenticated request
 always gets 401.
 
@@ -23,16 +23,16 @@ always gets 401.
 
 ## Trying the API in Swagger UI
 
-Available when [`DOCS_ENABLED=true`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/config.py) (the [`.env.example`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/.env.example) default; always off with
-[`ENVIRONMENT=prod`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/config.py)).
+Available when [`DOCS_ENABLED=true`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/config.py#L46) (the [`.env.example`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/.env.example) default; always off with
+[`ENVIRONMENT=prod`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/config.py#L45)).
 
 1. Open `/docs`, for example <http://127.0.0.1:8000/docs>.
 2. Click **Authorize** (padlock, top right). Under **APIKeyHeader**, enter the
    API key itself, not its digest, then click **Authorize** and **Close**. With
    [`.env.example`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/.env.example) the key is `local-dev-key-change-me`; otherwise use the key
-   whose SHA-256 digest is in your [`API_KEY_HASHES`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/config.py).
+   whose SHA-256 digest is in your [`API_KEY_HASHES`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/config.py#L42).
 3. Open an endpoint, click **Try it out**, fill in the parameters, and click
-   **Execute**. For the FTE endpoint, [`dept_id`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py) is required. `tenure` is a
+   **Execute**. For the FTE endpoint, [`dept_id`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py#L30) is required. `tenure` is a
    list: select one or more values (Ctrl-click or Cmd-click for several), or
    none for all tenures.
 
@@ -42,7 +42,7 @@ Swagger UI now sends `X-API-Key` with every request and shows the equivalent
 
 ## `GET /api/departments`
 
-All departments, ordered by [`dept_id`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py).
+All departments, ordered by [`dept_id`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py#L30).
 
 ```sh
 curl -H "X-API-Key: $KEY" http://127.0.0.1:8000/api/departments
@@ -65,7 +65,7 @@ curl -H "X-API-Key: $KEY" http://127.0.0.1:8000/api/departments
 }
 ```
 
-[`dept_short`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py) is `null` for the 10 departments whose source row has no short
+[`dept_short`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py#L34) is `null` for the 10 departments whose source row has no short
 names ([D21](assumptions.md#d21)). French names keep the typographic apostrophe `’`.
 
 ## `GET /api/departments/{dept_id}/fte`
@@ -74,11 +74,11 @@ Mean monthly FTE per quarter and tenure ([D3](assumptions.md#d3)), ordered by ye
 to 2 decimals ([D4](assumptions.md#d4)). Figures use the current version of the data only: values
 revised or removed by a later import are kept as history in the database but
 not served ([D16](assumptions.md#d16)). Quarters are calendar quarters unless the server sets
-[`QUARTER_BASIS=fiscal`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/config.py) ([D2](assumptions.md#d2)).
+[`QUARTER_BASIS=fiscal`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/config.py#L44) ([D2](assumptions.md#d2)).
 
 | Parameter | In | Type | Rules |
 |---|---|---|---|
-| [`dept_id`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py) | path | integer | 1 to 2147483647 |
+| [`dept_id`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py#L30) | path | integer | 1 to 2147483647 |
 | `year` | query | integer, optional | 2000 to 2100; year of the quarter |
 | `tenure` | query | repeatable, optional | `indeterminate`, `term`, `casual`, `student`, `missing`; case-insensitive; default all |
 
@@ -133,17 +133,17 @@ Every error has the same body ([D13](assumptions.md#d13), [`src/pbo_workforce/ap
 
 | Status | `code` | When |
 |---|---|---|
-| 401 | [`unauthorized`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/errors.py) | Missing or wrong API key |
-| 404 | [`department_not_found`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/routes/departments.py) | [`dept_id`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py) in range but unknown |
-| 404 | [`not_found`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/errors.py) | Unknown path |
-| 405 | [`method_not_allowed`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/errors.py) | Wrong method |
-| 422 | [`invalid_request`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/errors.py) | Invalid path or query value. The message lists each problem, for example `query.year: Input should be greater than or equal to 2000`. |
-| 500 | [`internal_error`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/errors.py) | Unexpected error. The message contains only a reference ID; the traceback is logged server-side under that ID. |
-| 503 | [`unavailable`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/routes/health.py) | `/health` could not reach the database |
+| 401 | [`unauthorized`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/errors.py#L23) | Missing or wrong API key |
+| 404 | [`department_not_found`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/routes/departments.py#L75) | [`dept_id`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/schemas.py#L30) in range but unknown |
+| 404 | [`not_found`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/errors.py#L23) | Unknown path |
+| 405 | [`method_not_allowed`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/errors.py#L23) | Wrong method |
+| 422 | [`invalid_request`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/errors.py#L56) | Invalid path or query value. The message lists each problem, for example `query.year: Input should be greater than or equal to 2000`. |
+| 500 | [`internal_error`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/errors.py#L73) | Unexpected error. The message contains only a reference ID; the traceback is logged server-side under that ID. |
+| 503 | [`unavailable`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/routes/health.py#L24) | `/health` could not reach the database |
 
 ## `GET /health`
 
-`200 {"status": "ok"}` if the database answers [`SELECT 1`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/routes/health.py), otherwise
+`200 {"status": "ok"}` if the database answers [`SELECT 1`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/routes/health.py#L22), otherwise
 `503` with the error body above. Unauthenticated, for probes.
 
 ## Response headers

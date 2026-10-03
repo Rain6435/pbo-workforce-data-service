@@ -1,6 +1,6 @@
 # PBO Workforce Data Service
 
-A prototype backend for the Parliamentary Budget Officer. It imports federal
+A prototype backend for the Parliamentary Budget Office (PBO). It imports federal
 workforce data (Federal Public Service, RCMP, CAF, and the department list) from
 an Excel workbook into PostgreSQL, validating and standardizing every row. It
 serves departments and quarterly FTE by tenure through a small, authenticated
@@ -37,9 +37,9 @@ entry in [Assumptions and decisions](assumptions.md) wherever they appear.
 **Short on time:** read 1 and 3.
 
 **Reviewing the code:** start with
-[`validate_row`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py)
+[`validate_row`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/validate.py#L106-L168)
 (the data rules),
-[`fte_per_quarter`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py)
+[`fte_per_quarter`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py#L35-L105)
 (the quarterly FTE query), and
 [`api/security.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/security.py)
 (authentication), then their tests in
@@ -51,7 +51,7 @@ and [`test_security.py`](https://github.com/Rain6435/pbo-workforce-data-service/
 
 | Criterion | Where |
 |---|---|
-| Secure backend / API / database design | Hashed API keys and constant-time comparison ([`api/security.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/security.py)), read-only [`pbo_api`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0002_roles.py) limited to departments and the [`workforce_current`](data-model.md#workforce_current-view) view, and no-DDL [`pbo_import`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0002_roles.py) ([`migrations/versions/0002_roles.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0002_roles.py), [`0003_row_versions.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0003_row_versions.py), [`tests/integration/test_db_roles.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_db_roles.py)), per-process credentials ([`config.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/config.py)), [Security](security.md) |
+| Secure backend / API / database design | Hashed API keys and constant-time comparison ([`api/security.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/api/security.py)), read-only [`pbo_api`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0002_roles.py#L33) limited to departments and the [`workforce_current`](data-model.md#workforce_current-view) view, and no-DDL [`pbo_import`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0002_roles.py#L34) ([`migrations/versions/0002_roles.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0002_roles.py), [`0003_row_versions.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0003_row_versions.py), [`tests/integration/test_db_roles.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_db_roles.py)), per-process credentials ([`config.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/config.py)), [Security](security.md) |
 | Scalable design | Monthly grain with quarters computed in SQL ([`repositories/workforce.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/repositories/workforce.py)), partial index for the FTE query over current rows only ([`migrations/versions/0003_row_versions.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/migrations/versions/0003_row_versions.py)), streaming reader and chunked inserts ([`ingest/reader.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/reader.py), [`ingest/load.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/src/pbo_workforce/ingest/load.py)) |
 | Requirements analysis in an existing environment | Every data problem profiled and tested ([`tests/integration/test_import_real_file.py`](https://github.com/Rain6435/pbo-workforce-data-service/blob/main/tests/integration/test_import_real_file.py)), decisions and open questions in [Assumptions and decisions](assumptions.md) |
 | Clear technical documentation | This site, docstrings explaining *why*, decision IDs ([D1](assumptions.md#d1) to [D22](assumptions.md#d22)) cited in code and tests |

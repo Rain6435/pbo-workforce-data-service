@@ -9,6 +9,6 @@ The use of AI tools in this project falls into three main categories:
    AI was used to structure the Markdown documentation and generate precise inline links referencing specific methods, files, and key project components. This allows readers to quickly access the referenced code or section, enabling smoother context comprehension and retention.
 
 3. **Testing**
-   Unit tests for relation different integrations were written by hand. Complementary testing for functional purposes were constructed with the support of AI, especially in covering as many edge cases as possible. This is crucial for scalability which is core to two of the design questions, dataset increase, collaboration and API integration.
+   Unit tests for different relational integrations were written by hand. Complementary testing for functional purposes were constructed with the support of AI, especially in covering as many edge cases as possible. This is crucial for scalability which is core to two of the design questions, dataset increase, collaboration and API integration.
 
 AI Tools used: Claude Code & Google Gemini
