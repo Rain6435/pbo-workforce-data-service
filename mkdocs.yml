@@ -1,0 +1,69 @@
+# Documentation site, published to GitHub Pages by .github/workflows/docs.yml.
+# Preview locally: uv run --only-group docs mkdocs serve
+site_name: PBO Workforce Data Service
+site_description: Technical documentation for the PBO workforce data import and API prototype.
+site_url: https://rain6435.github.io/pbo-workforce-data-service/
+repo_url: https://github.com/Rain6435/pbo-workforce-data-service
+repo_name: Rain6435/pbo-workforce-data-service
+edit_uri: edit/main/docs/
+
+# The navigation is the suggested reading order (see docs/index.md).
+nav:
+  - Home: index.md
+  - Assumptions and decisions: assumptions.md
+  - Import process: import.md
+  - API: api.md
+  - Architecture: architecture.md
+  - Data model: data-model.md
+  - Security: security.md
+  - Design questions: design-questions.md
+  - AI usage: ai-usage.md
+
+theme:
+  name: material
+  language: en
+  features:
+    - content.code.copy
+    - navigation.footer
+    - navigation.top
+    - search.highlight
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+# Page-specific layout tweaks (e.g. the security risk register's column widths).
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences:
+      # Render ```mermaid blocks as diagrams (architecture, data model).
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+# Broken internal links or anchors fail the build (mkdocs build --strict).
+validation:
+  links:
+    not_found: warn
+    anchors: warn
+    unrecognized_links: warn
