@@ -10,10 +10,10 @@ permissions:
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: true
       - run: uv sync --locked
@@ -22,10 +22,10 @@ jobs:
       - run: uv run pyright
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       postgres:
-        image: postgres:16-alpine
+        image: postgres:16.15-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
         env:
           POSTGRES_USER: pbo_admin
           POSTGRES_PASSWORD: pbo_admin
@@ -46,8 +46,8 @@ jobs:
       DATABASE_URL: postgresql+psycopg://pbo_api:pbo_api@localhost:5432/pbo_workforce_test
       IMPORT_DATABASE_URL: postgresql+psycopg://pbo_import:pbo_import@localhost:5432/pbo_workforce_test
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: true
       - run: uv sync --locked
@@ -55,21 +55,21 @@ jobs:
 
   audit:
     # Known vulnerabilities in the locked runtime dependencies.
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
       - run: uv export --locked --no-dev --no-emit-project --format requirements-txt > requirements.txt
       - run: uvx pip-audit --strict -r requirements.txt
 
   compose:
     # `docker compose up` from a clean checkout, then exercise the running API.
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       # The key whose digest is in .env.example (local/CI only).
       API_KEY: local-dev-key-change-me
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: cp .env.example .env
       - run: docker compose up --build --detach
       - name: Wait for the API
